@@ -5,7 +5,7 @@
 ;; Author: Noah Friedman <friedman@splode.com>
 ;; Maintainer: friedman@splode.com
 
-;; $Id: vm-multdom.el,v 1.4 1997/12/23 14:35:39 friedman Exp $
+;; $Id: vm-multdom.el,v 1.5 2010/11/02 19:55:46 friedman Exp $
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -18,9 +18,7 @@
 ;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, you can either send email to this
-;; program's maintainer or write to: The Free Software Foundation,
-;; Inc.; 59 Temple Place, Suite 330; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -37,7 +35,8 @@
 ;;          '("regexps" "matching" "each" "of" "your" "email" "addresses"))
 ;;
 ;; You may want to use regexps which match addresses for mail to specific
-;; machines, e.g. "friedman@.*\\.splode\\.com\\|friedman@splode\\.com".
+;; machines, e.g. "\\(?:noahf?\\|friedman\\)@\\(?:.*\\.\\|\\)splode\\.com".
+;; See the fmailutils.el `fmailutils-make-address-regexp' function.
 
 ;; This package requires Emacs/XEmacs 19 or later, VM version 6.30 or
 ;; later, and fmailutils 1.10 or later.
@@ -83,11 +82,11 @@ outbound messages.")
 If the value of this variable is the symbol `<>', then the function
 vm-multdom-set-reply-address will set your return address in the style
 
-\tFrom: Noah Friedman <friedman@prep.ai.mit.edu>
+\tFrom: Noah Friedman <friedman@splode.com>
 
 Otherwise, it will use the style
 
-\tFrom: friedman@prep.ai.mit.edu \(Noah Friedman\)")
+\tFrom: friedman@splode.com \(Noah Friedman\)")
 
 (defvar vm-multdom-set-reply-address-replyto t
   "*If non-nil, vm-multdom-set-reply-address sets `Reply-To' header.
@@ -203,11 +202,15 @@ reply even if you are normally using a different default address."
                                vm-multdom-set-reply-address-replyto))
 
 (defun vm-multdom-address-list-regexp (addrs)
-  (concat "^" (mapconcat (function (lambda (addr)
-                                     (if (consp addr)
-                                         (car addr)
-                                       addr)))
-                         addrs "\\|") "$"))
+  (concat "\\<\\("
+          ;; In v21 or later, avoid saving match
+          (if (string-lessp "21" emacs-version) "?:")
+          (mapconcat (lambda (addr)
+                       (if (consp addr)
+                           (car addr)
+                         addr))
+                     addrs "\\|")
+          "\\)\\>"))
 
 (provide 'vm-multdom)
 
